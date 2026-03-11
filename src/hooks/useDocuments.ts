@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Document, DocumentWithStatus, CreateDocumentRequest, RenewDocumentRequest } from '@/types';
-import { addDocumentStatus, sortByDday } from '@/lib/utils';
+import { processDocuments, sortByDday } from '@/lib/utils';
 
 export function useDocuments(companyId?: string) {
   const [documents, setDocuments] = useState<DocumentWithStatus[]>([]);
@@ -17,8 +17,7 @@ export function useDocuments(companyId?: string) {
       const res = await fetch(`/api/documents?${params}`);
       if (!res.ok) throw new Error('서류 목록을 불러올 수 없습니다');
       const data: Document[] = await res.json();
-      const withStatus = data.map(addDocumentStatus);
-      setDocuments(sortByDday(withStatus));
+      setDocuments(sortByDday(processDocuments(data)));
     } catch (err) {
       setError(err instanceof Error ? err.message : '오류가 발생했습니다');
     } finally {

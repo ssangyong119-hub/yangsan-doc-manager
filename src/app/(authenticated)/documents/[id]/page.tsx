@@ -3,7 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Document, DocumentWithStatus, RenewalHistory, Company, CreateDocumentRequest } from '@/types';
-import { addDocumentStatus, formatDday, formatDate, formatDateKo, getProgressPercentage } from '@/lib/utils';
+import { processDocuments, formatDday, formatDate, formatDateKo, getProgressPercentage } from '@/lib/utils';
 import { STATUS_CONFIG, CATEGORY_ICONS, RISK_LABELS } from '@/lib/constants';
 import { useAdminMode } from '@/hooks/useAdminMode';
 import RenewModal from '@/components/documents/RenewModal';
@@ -24,14 +24,19 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
 
   const fetchData = async () => {
     try {
-      const [docRes, compRes] = await Promise.all([
+      const [docRes, allDocsRes, compRes] = await Promise.all([
         fetch(`/api/documents/${id}`),
+        fetch('/api/documents'),
         fetch('/api/companies'),
       ]);
       const docData = await docRes.json();
+      const allDocs = await allDocsRes.json();
       const compData = await compRes.json();
-      const withStatus = addDocumentStatus(docData as Document);
-      setDoc(withStatus);
+
+      // 인증정보 연동을 위해 전체 문서를 processDocuments로 처리
+      const processed = processDocuments(allDocs as Document[]);
+      const thisDoc = processed.find((d) => d.id === id);
+      setDoc(thisDoc || null);
       setHistory(docData.renewal_history || []);
       setCompanies(compData);
     } catch {

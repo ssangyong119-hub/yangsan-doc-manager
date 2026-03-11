@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Company, Document, DocumentWithStatus } from '@/types';
-import { addDocumentStatus } from '@/lib/utils';
+import { processDocuments } from '@/lib/utils';
 import { useAdminMode } from '@/hooks/useAdminMode';
 import AdminVerifyModal from '@/components/auth/AdminVerifyModal';
 import Link from 'next/link';
@@ -24,7 +24,7 @@ export default function CompaniesPage() {
     ])
       .then(([comps, docs]) => {
         setCompanies(comps);
-        setDocuments((docs as Document[]).map(addDocumentStatus));
+        setDocuments(processDocuments(docs as Document[]));
       })
       .finally(() => setIsLoading(false));
   };

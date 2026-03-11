@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Document, DocumentWithStatus } from '@/types';
-import { addDocumentStatus, formatDate } from '@/lib/utils';
+import { processDocuments, formatDate } from '@/lib/utils';
 import { STATUS_CONFIG } from '@/lib/constants';
 import Link from 'next/link';
 
@@ -18,7 +18,7 @@ export default function CalendarPage() {
     fetch('/api/documents')
       .then((r) => r.json())
       .then((docs: Document[]) => {
-        setDocuments(docs.map(addDocumentStatus));
+        setDocuments(processDocuments(docs));
       })
       .finally(() => setIsLoading(false));
   }, []);

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { Document, DocumentWithStatus, Company, DocumentCategory, DocumentStatus, CreateDocumentRequest } from '@/types';
-import { addDocumentStatus, sortByDday } from '@/lib/utils';
+import { processDocuments, sortByDday } from '@/lib/utils';
 import { CATEGORIES } from '@/lib/constants';
 import { useAdminMode } from '@/hooks/useAdminMode';
 import DocumentCard from '@/components/documents/DocumentCard';
@@ -28,8 +28,7 @@ export default function DocumentsPage() {
       fetch('/api/companies').then((r) => r.json()),
     ])
       .then(([docs, comps]) => {
-        const withStatus = (docs as Document[]).map(addDocumentStatus);
-        setDocuments(sortByDday(withStatus));
+        setDocuments(sortByDday(processDocuments(docs as Document[])));
         setCompanies(comps as Company[]);
       })
       .finally(() => setIsLoading(false));

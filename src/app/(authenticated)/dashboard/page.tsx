@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Document, DocumentWithStatus, Company } from '@/types';
-import { addDocumentStatus, sortByDday } from '@/lib/utils';
+import { processDocuments, sortByDday } from '@/lib/utils';
 import StatCards from '@/components/dashboard/StatCards';
 import AlertBanner from '@/components/dashboard/AlertBanner';
 import ExpiryTimeline from '@/components/dashboard/ExpiryTimeline';
@@ -19,8 +19,7 @@ export default function DashboardPage() {
       fetch('/api/companies').then((r) => r.json()),
     ])
       .then(([docs, comps]) => {
-        const withStatus = (docs as Document[]).map(addDocumentStatus);
-        setDocuments(sortByDday(withStatus));
+        setDocuments(sortByDday(processDocuments(docs as Document[])));
         setCompanies(comps as Company[]);
       })
       .catch(() => {})

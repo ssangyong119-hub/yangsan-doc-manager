@@ -45,6 +45,41 @@ export function addDocumentStatus(doc: Document): DocumentWithStatus {
   return { ...doc, dday, status };
 }
 
+/**
+ * 인증정보 D-day 연동 처리
+ * - 인증정보는 자체 만료일이 아닌 같은 업체의 다른 서류 상태에 연동
+ * - 다른 서류가 모두 만료 전이면 인증정보 = D-Day (0)
+ * - 다른 서류 중 만료된 것이 있으면 가장 심한 값을 따라감 (예: D+2이면 인증정보도 D+2)
+ */
+export function adjustCertificationDday(docs: DocumentWithStatus[]): DocumentWithStatus[] {
+  return docs.map((doc) => {
+    if (doc.name !== '인증정보') return doc;
+
+    // 같은 업체의 인증정보가 아닌 서류들
+    const otherDocs = docs.filter((d) => d.company_id === doc.company_id && d.name !== '인증정보');
+
+    if (otherDocs.length === 0) {
+      // 다른 서류가 없으면 D-Day(0)
+      return { ...doc, dday: 0, status: getDocumentStatus(0) };
+    }
+
+    // 다른 서류 중 가장 작은(가장 심한) D-day
+    const worstDday = Math.min(...otherDocs.map((d) => d.dday));
+
+    // 만료된 서류가 있으면 그 값을 따라가고, 없으면 0
+    const certDday = worstDday < 0 ? worstDday : 0;
+    return { ...doc, dday: certDday, status: getDocumentStatus(certDday) };
+  });
+}
+
+/**
+ * 서류 배열을 상태 부여 + 인증정보 연동까지 한번에 처리
+ */
+export function processDocuments(docs: Document[]): DocumentWithStatus[] {
+  const withStatus = docs.map(addDocumentStatus);
+  return adjustCertificationDday(withStatus);
+}
+
 export function sortByDday(docs: DocumentWithStatus[]): DocumentWithStatus[] {
   return [...docs].sort((a, b) => {
     const priorityA = STATUS_CONFIG[a.status].priority;
