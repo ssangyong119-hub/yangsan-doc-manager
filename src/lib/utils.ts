@@ -4,11 +4,12 @@ import { DocumentStatus, Document, DocumentWithStatus } from '@/types';
 import { STATUS_CONFIG } from './constants';
 
 export function calculateDday(expiryDate: string): number {
+  // 날짜 문자열만 사용하여 시간대/시간 오차 방지
   const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const expiry = parseISO(expiryDate);
-  expiry.setHours(0, 0, 0, 0);
-  return differenceInDays(expiry, today);
+  const todayStr = format(today, 'yyyy-MM-dd');
+  const todayDate = parseISO(todayStr);
+  const expiry = parseISO(expiryDate.substring(0, 10));
+  return differenceInDays(expiry, todayDate);
 }
 
 export function getDocumentStatus(dday: number): DocumentStatus {

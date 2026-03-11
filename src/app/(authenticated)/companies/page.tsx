@@ -47,6 +47,18 @@ export default function CompaniesPage() {
     }
   };
 
+  const handleDeleteCompany = async (e: React.MouseEvent, companyId: string, companyName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!confirm(`"${companyName}" 업체를 삭제하시겠습니까?\n해당 업체의 서류 데이터도 함께 삭제됩니다.`)) return;
+    const res = await fetch(`/api/companies/${companyId}`, { method: 'DELETE' });
+    if (res.ok) {
+      fetchData();
+    } else {
+      alert('업체 삭제에 실패했습니다.');
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-60">
@@ -101,9 +113,22 @@ export default function CompaniesPage() {
                   <h3 className="font-bold text-[#1A202C]">{company.name}</h3>
                   <p className="text-xs text-[#718096]">서류 {compDocs.length}건</p>
                 </div>
-                <svg className="w-5 h-5 text-gray-300 ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                <div className="ml-auto flex items-center gap-1">
+                  {isAdmin && (
+                    <button
+                      onClick={(e) => handleDeleteCompany(e, company.id, company.name)}
+                      className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                      title="업체 삭제"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  )}
+                  <svg className="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </div>
               </div>
 
               <div className="flex gap-2">
